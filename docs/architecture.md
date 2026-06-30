@@ -1,8 +1,14 @@
 # GCP target architecture
 
-Goal: run World Monitor as a managed, autoscaling, cloud-native stack on GCP — no
-workstation dependency — while preserving the "local AI, no per-call API keys" property
-via self-hosted Ollama.
+Goal: run **Universe Monitor** — a Palantir-style intelligence platform built on the
+World Monitor application — as a managed, autoscaling, cloud-native stack on GCP, with
+no workstation dependency, while preserving the "local AI, no per-call API keys"
+property via self-hosted Ollama.
+
+This document is the design; [`roadmap.md`](roadmap.md) tracks build progress against the
+17-phase plan and the IaC lives in [`../gcp/terraform/`](../gcp/terraform/). The open
+decisions below are now **resolved** by the cloud-native plan (project `aihumane-prod`,
+domain `aihumane.in`, Cloud Run-first).
 
 ## Upstream stack (what we're deploying)
 
@@ -38,19 +44,22 @@ If you'd rather keep the compose topology 1:1 (sidecars, the relay, the proxy) a
 finer control, GKE Autopilot maps the `docker-compose.yml` services to Deployments +
 Services with a Memorystore (or in-cluster Redis) backend. Heavier ops than Cloud Run.
 
-## Open decisions (to confirm before building `gcp/`)
+## Decisions (resolved by the cloud-native plan)
 
-1. **Runtime:** Cloud Run-first (recommended) vs GKE Autopilot.
-2. **Ollama hosting:** Cloud Run GPU (scales to zero, pricier per-hour) vs always-on GCE
-   GPU VM (cheaper steady-state) vs dropping local-AI in favor of a managed LLM.
-3. **MCP exposure:** public `/api/mcp` behind the `X-WorldMonitor-Key` header (simple) vs
-   restoring the upstream OAuth gate.
-4. **Region** and **project id**.
-5. **Build source:** build from upstream `main` (auto-updating) vs a pinned commit/tag
-   (reproducible).
+1. **Runtime:** Cloud Run-first ✅ (GKE is the Enterprise-tier migration path).
+2. **Ollama hosting:** optional self-hosted Ollama Cloud Run service, off by default
+   (`enable_ollama`); a GCE GPU VM is the cheaper always-on alternative.
+3. **MCP exposure:** public `/api/mcp` behind the `X-WorldMonitor-Key` header for now;
+   `admin.` is fronted by IAP.
+4. **Region / project:** `us-central1` / `aihumane-prod` (both variables).
+5. **Build source:** Cloud Build clones upstream `koala73/worldmonitor` (`_APP_SOURCE_REF`,
+   default `main`); pin a tag/commit for reproducible builds.
 
-## IaC plan (`gcp/`)
+## IaC (`gcp/`) — built
 
-Target: **Terraform** for infra (Artifact Registry, Memorystore, VPC connector, Secret
-Manager, Cloud Run services, IAM) + a **Cloud Build** config for build-and-deploy. To be
-added once the decisions above are settled.
+Implemented as **Terraform** (`gcp/terraform/`) for infra — APIs, VPC + connector + NAT,
+IAM service accounts, Artifact Registry, Secret Manager, Cloud SQL, Memorystore, GCS,
+Pub/Sub, Cloud Run services + seeders job, Cloud Scheduler, monitoring, and the HTTPS LB
+with Cloud Armor + Cloud DNS — plus a **Cloud Build** config (`gcp/cloudbuild.yaml`) for
+build-and-deploy. See [`../gcp/README.md`](../gcp/README.md) for the file map and
+[`roadmap.md`](roadmap.md) for per-phase status.

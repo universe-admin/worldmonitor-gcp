@@ -1,0 +1,37 @@
+# Copy to terraform.tfvars and edit. terraform.tfvars is gitignored (real values).
+
+project_id = "aihumane-prod"
+region     = "us-central1"
+zone       = "us-central1-a"
+domain     = "aihumane.in"
+
+# Images — fill in once Cloud Build has pushed them to Artifact Registry.
+# Until then they fall back to a hello placeholder so the first apply succeeds.
+# image_app        = "us-central1-docker.pkg.dev/aihumane-prod/universe-monitor/app:latest"
+# image_ais_relay  = "us-central1-docker.pkg.dev/aihumane-prod/universe-monitor/ais-relay:latest"
+# image_redis_rest = "us-central1-docker.pkg.dev/aihumane-prod/universe-monitor/redis-rest:latest"
+
+# Data tier (MVP defaults).
+db_tier              = "db-custom-1-3840"
+db_high_availability = false
+deploy_redis         = true
+redis_memory_gb      = 1
+
+# Local AI (Phase 10). Leave off for MVP; turn on when you want self-hosted Ollama.
+enable_ollama = false
+
+# Cloud Run scaling. Set min_instances = 1 for the MCP/backend to avoid cold starts.
+min_instances = 0
+max_instances = 4
+
+# Monitoring alerts (Phase 12). Leave blank to skip alert policies.
+alert_email = ""
+
+# Subdomain -> Cloud Run service routing (Phase 14). Defaults match the plan:
+# subdomains = {
+#   "aihumane.in"       = "frontend"
+#   "app.aihumane.in"   = "frontend"
+#   "api.aihumane.in"   = "backend"
+#   "docs.aihumane.in"  = "frontend"
+#   "admin.aihumane.in" = "auth"
+# }
