@@ -1,0 +1,34 @@
+# Local overrides template for the upstream worldmonitor docker-compose.
+# Copy to `docker-compose.override.yml` (gitignored) in the worldmonitor checkout.
+# Dashboard works without any of these (public feeds); each key unlocks a data layer.
+services:
+  worldmonitor:
+    environment:
+      # ---- Local AI via Ollama (no API keys) ----
+      LLM_API_URL: "http://host.docker.internal:11434/v1/chat/completions"
+      LLM_MODEL: "llama3.1:8b"
+      LLM_API_KEY: "ollama"            # placeholder; Ollama ignores it
+
+      # ---- Optional cloud LLMs (leave blank; Ollama covers AI) ----
+      GROQ_API_KEY: ""
+      OPENROUTER_API_KEY: ""
+
+      # ---- Markets & Economics ----
+      FINNHUB_API_KEY: ""
+      FRED_API_KEY: ""
+      EIA_API_KEY: ""
+
+      # ---- Conflict & Unrest ----
+      ACLED_EMAIL: ""
+      ACLED_PASSWORD: ""
+
+      # ---- Earth Observation (required for fire-detection seeder) ----
+      NASA_FIRMS_API_KEY: ""
+
+      # ---- Aviation / Maritime ----
+      AVIATIONSTACK_API: ""
+      TRAVELPAYOUTS_API_TOKEN: ""
+      AISSTREAM_API_KEY: ""
+
+      # ---- Internet Outages (optional, paid) ----
+      CLOUDFLARE_API_TOKEN: ""

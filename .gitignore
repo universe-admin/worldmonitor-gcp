@@ -1,0 +1,24 @@
+# ---- Secrets (NEVER commit) ----
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+.wm-mcp-key
+docker-compose.override.yml          # real override may carry keys; commit the .example only
+secrets/
+*-key.json                            # GCP service-account keys
+service-account*.json
+
+# ---- Terraform ----
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+
+# ---- Misc ----
+*.log
+node_modules/
+.DS_Store

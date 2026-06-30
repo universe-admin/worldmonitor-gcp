@@ -1,0 +1,12 @@
+This repository contains deployment infrastructure for "World Monitor".
+
+World Monitor is an independent open-source project by koala73 and contributors,
+licensed under the GNU Affero General Public License v3.0 (AGPL-3.0-only).
+
+    Upstream: https://github.com/koala73/worldmonitor
+
+This repo does not redistribute the World Monitor application source; it provides
+configuration and infrastructure-as-code to deploy the upstream project. If you
+build and serve the application from these configs, your deployment is subject to
+the AGPL-3.0 terms of the upstream project, including the network-use source-offer
+requirement (AGPL §13).
