@@ -29,7 +29,8 @@ running anything on a workstation.
 | [`docker-compose.override.example.yml`](docker-compose.override.example.yml) | Local-stack overlay template (Ollama wiring + optional data-feed keys). Copy to `docker-compose.override.yml` (gitignored) and fill in. |
 | [`.env.example`](.env.example) | Required secrets + optional feed keys for the local/self-host stack. Copy to `.env` (gitignored). |
 | [`gcp/terraform/`](gcp/terraform/) | GCP infrastructure-as-code: APIs, VPC, IAM, Artifact Registry, Cloud Run, Cloud SQL, Memorystore, GCS, Pub/Sub, Secret Manager, HTTPS LB + Cloud Armor, Cloud DNS, monitoring. |
-| [`gcp/cloudbuild.yaml`](gcp/cloudbuild.yaml) | Cloud Build CI/CD: build app image → Artifact Registry → deploy Cloud Run (Phase 13). |
+| [`gcp/cloudbuild.yaml`](gcp/cloudbuild.yaml) | Cloud Build CI/CD: build app + worker images → Artifact Registry → deploy Cloud Run (Phase 13). |
+| [`workers/`](workers/) | Private AI worker (Phases 10 & 16): Pub/Sub → Claude → Cloud SQL / Cloud Storage. |
 | [`docs/roadmap.md`](docs/roadmap.md) | Phase-by-phase progress tracker for the 17-step cloud-native plan. |
 | [`docs/architecture.md`](docs/architecture.md) | Target GCP architecture and the (now resolved) design decisions. |
 

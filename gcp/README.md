@@ -19,6 +19,7 @@ gcp/
     iam.tf                 # Phase 2  — service accounts + least-privilege roles
     artifact.tf            # Phase 4  — Artifact Registry
     run.tf                 # Phase 5  — Cloud Run: frontend/backend/websocket/auth + relay/redis-rest/ollama
+    workers.tf             # Phase 10/16 — private AI worker Cloud Run service
     sql.tf                 # Phase 6  — Cloud SQL (Postgres, private IP)
     storage.tf             # Phase 7  — GCS buckets
     pubsub.tf              # Phase 8  — Pub/Sub topics + subscriptions
@@ -31,7 +32,13 @@ gcp/
     dns.tf                 # Phase 14 — Cloud DNS zone + records
     outputs.tf             # LB IP, name servers, registry path, SQL/Redis, service URLs
     terraform.tfvars.example
+  migrations/
+    001_pgvector.sql       # Phase 11 — pgvector extension + documents/entities/relationships
 ```
+
+The private AI worker that consumes Pub/Sub (Phases 10 & 16) lives in
+[`../workers/`](../workers/) and is built by `cloudbuild.yaml` into the same
+Artifact Registry repo.
 
 ## Usage
 

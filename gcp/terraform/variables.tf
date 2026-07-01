@@ -66,6 +66,12 @@ variable "image_redis_rest" {
   default     = ""
 }
 
+variable "image_worker" {
+  description = "Container image for the private AI worker (Phases 10 & 16)."
+  type        = string
+  default     = "" # built from workers/ by Cloud Build
+}
+
 variable "enable_ollama" {
   description = "Deploy the self-hosted Ollama (local-AI) Cloud Run service (Phase 10)."
   type        = bool

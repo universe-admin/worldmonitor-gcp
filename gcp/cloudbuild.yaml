@@ -26,6 +26,8 @@ options:
 images:
   - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/app:${SHORT_SHA}"
   - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/app:latest"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/worker:${SHORT_SHA}"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/worker:latest"
 
 steps:
   # 1. Fetch the application source (skip if the build already runs in the app repo).
@@ -61,7 +63,19 @@ steps:
       - --all-tags
       - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/app"
 
-  # 4. Deploy the new image to Cloud Run (the app services share one image).
+  # 4. Build the private AI worker image from this repo's workers/ directory.
+  - id: build-worker
+    name: gcr.io/cloud-builders/docker
+    dir: workers
+    args:
+      - build
+      - -t
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/worker:${SHORT_SHA}"
+      - -t
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/worker:latest"
+      - .
+
+  # 5. Deploy the new images to Cloud Run (the app services share one image).
   - id: deploy
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: bash
@@ -74,6 +88,10 @@ steps:
             --image "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/app:${SHORT_SHA}" \
             --quiet
         done
+        gcloud run deploy uvm-ai-worker \
+          --region "${_REGION}" \
+          --image "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/worker:${SHORT_SHA}" \
+          --quiet
 
 # Infrastructure changes (gcp/terraform) are applied by a separate Terraform
 # pipeline / manual `terraform apply` — kept out of the image build so app
