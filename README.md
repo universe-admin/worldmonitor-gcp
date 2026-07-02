@@ -24,8 +24,12 @@ running anything on a workstation.
 
 ## What's here
 
+> **Want the dashboard live and shareable now?** See [docs/hosting.md](docs/hosting.md) —
+> `./gcp/deploy-mvp.sh <project>` from Cloud Shell gives you a public HTTPS URL in ~10 min.
+
 | Path | Purpose |
 |---|---|
+| [`gcp/deploy-mvp.sh`](gcp/deploy-mvp.sh) | One-command MVP deploy → public Cloud Run URL (see [docs/hosting.md](docs/hosting.md)). |
 | [`docker-compose.override.example.yml`](docker-compose.override.example.yml) | Local-stack overlay template (Ollama wiring + optional data-feed keys). Copy to `docker-compose.override.yml` (gitignored) and fill in. |
 | [`.env.example`](.env.example) | Required secrets + optional feed keys for the local/self-host stack. Copy to `.env` (gitignored). |
 | [`gcp/terraform/`](gcp/terraform/) | GCP infrastructure-as-code: APIs, VPC, IAM, Artifact Registry, Cloud Run, Cloud SQL, Memorystore, GCS, Pub/Sub, Secret Manager, HTTPS LB + Cloud Armor, Cloud DNS, monitoring. |

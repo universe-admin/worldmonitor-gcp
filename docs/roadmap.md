@@ -145,6 +145,13 @@ Redis / Storage / Pub/Sub / Secret Manager → private AI workers) is what
   workers, monitoring, Cloud Armor.
 - **Enterprise:** migrate long-running services to GKE, multi-region, advanced networking.
 
+## Fast path — shareable dashboard first
+
+Don't need the full stack yet? [`gcp/deploy-mvp.sh`](../gcp/deploy-mvp.sh) deploys
+the dashboard to one public Cloud Run service and prints a shareable
+`https://worldmonitor-….run.app` URL — see [hosting.md](hosting.md). The full
+Terraform stack below replaces it when you're ready for the LB/domain/database tier.
+
 ## How to bring it up
 
 ```bash
