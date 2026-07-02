@@ -1,0 +1,37 @@
+# CI for the deployment repo: validate the Terraform, the worker Python, and
+# the build/deploy configs on every PR and push to main. No GCP credentials
+# needed — terraform validate runs with -backend=false.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform fmt
+        working-directory: gcp/terraform
+        run: terraform fmt -check -recursive -diff
+
+      - name: Terraform validate
+        working-directory: gcp/terraform
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate
+
+      - name: Python compile (AI worker)
+        run: python3 -m py_compile workers/ai_worker.py workers/db.py
+
+      - name: YAML + shell syntax
+        run: |
+          python3 -c "import yaml, glob; [yaml.safe_load(open(f)) for f in glob.glob('gcp/*.yaml') + glob.glob('.github/workflows/*.yml')]"
+          bash -n gcp/deploy-mvp.sh
