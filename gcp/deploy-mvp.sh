@@ -15,13 +15,11 @@
 #   cd worldmonitor-gcp
 #   ./gcp/deploy-mvp.sh <PROJECT_ID> [REGION]
 #
-# Optional env (export before running; each unlocks a data layer / feature):
-#   UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN   cross-user cache (free
-#       tier at upstash.com; the dashboard runs without it, uncached)
-#   GROQ_API_KEY or OPENROUTER_API_KEY                  AI briefings
-#   FINNHUB_API_KEY FRED_API_KEY EIA_API_KEY NASA_FIRMS_API_KEY
-#   ACLED_EMAIL ACLED_PASSWORD AVIATIONSTACK_API AISSTREAM_API_KEY
-#   WORLDMONITOR_VALID_KEYS                             MCP API key(s), wm_<40hex>
+# Only the project id is mandatory. The dashboard runs on public feeds with no
+# keys or config. To unlock an optional data/AI layer later, set an env var on
+# the running service without redeploying, e.g.:
+#   gcloud run services update worldmonitor --region <REGION> \
+#       --update-env-vars GROQ_API_KEY=...,FINNHUB_API_KEY=...
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -69,31 +67,18 @@ timeout: 1800s
 EOF
 gcloud builds submit --no-source --config "${WORKDIR}/build.yaml" --quiet
 
-say "Collecting optional feature env vars"
-ENV_VARS=""
-for var in UPSTASH_REDIS_REST_URL UPSTASH_REDIS_REST_TOKEN GROQ_API_KEY \
-           OPENROUTER_API_KEY FINNHUB_API_KEY FRED_API_KEY EIA_API_KEY \
-           NASA_FIRMS_API_KEY ACLED_EMAIL ACLED_PASSWORD AVIATIONSTACK_API \
-           AISSTREAM_API_KEY WORLDMONITOR_VALID_KEYS; do
-  val="${!var:-}"
-  if [ -n "${val}" ]; then
-    ENV_VARS="${ENV_VARS:+${ENV_VARS},}${var}=${val}"
-    echo "  + ${var}"
-  fi
-done
-[ -n "${ENV_VARS}" ] || echo "  (none set — dashboard will run on public feeds only)"
-
 say "Deploying to Cloud Run (public)"
+# The image serves on 8080 (nginx). No env vars — the dashboard runs on public
+# feeds; add optional keys later with `gcloud run services update` (see header).
 gcloud run deploy "${SERVICE}" \
   --image "${IMAGE}" \
   --region "${REGION}" \
   --allow-unauthenticated \
-  --port 3000 \
+  --port 8080 \
   --memory 1Gi \
   --cpu 1 \
   --min-instances 0 \
   --max-instances 3 \
-  ${ENV_VARS:+--set-env-vars "${ENV_VARS}"} \
   --quiet
 
 URL="$(gcloud run services describe "${SERVICE}" --region "${REGION}" --format 'value(status.url)')"

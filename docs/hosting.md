@@ -19,11 +19,16 @@ you export unlocks another data layer).
    git clone -b claude/universe-monitor-hosting-77vdio \
        https://github.com/universe-admin/worldmonitor-gcp.git
    cd worldmonitor-gcp
-
-   # optional: export feature keys first, e.g.
-   # export GROQ_API_KEY=... FINNHUB_API_KEY=...
-
    ./gcp/deploy-mvp.sh aihumane-prod
+   ```
+
+   The project id is the only required argument — the dashboard runs on public
+   feeds with no keys. To unlock an optional layer afterwards, set an env var on
+   the running service (no redeploy):
+
+   ```bash
+   gcloud run services update worldmonitor --region us-central1 \
+       --update-env-vars GROQ_API_KEY=...,FINNHUB_API_KEY=...
    ```
 
 4. The script prints the live URL when done:

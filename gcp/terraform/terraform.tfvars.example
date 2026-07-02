@@ -1,37 +1,18 @@
 # Copy to terraform.tfvars and edit. terraform.tfvars is gitignored (real values).
+#
+# Only project_id is mandatory. Every other variable has a working default in
+# variables.tf — override one only when you need to. Run `terraform apply` with
+# just the line below to bring up the stack on defaults (region us-central1,
+# domain aihumane.in, MVP sizing, placeholder images until Cloud Build pushes).
 
 project_id = "aihumane-prod"
-region     = "us-central1"
-zone       = "us-central1-a"
-domain     = "aihumane.in"
 
-# Images — fill in once Cloud Build has pushed them to Artifact Registry.
-# Until then they fall back to a hello placeholder so the first apply succeeds.
-# image_app        = "us-central1-docker.pkg.dev/aihumane-prod/universe-monitor/app:latest"
-# image_ais_relay  = "us-central1-docker.pkg.dev/aihumane-prod/universe-monitor/ais-relay:latest"
-# image_redis_rest = "us-central1-docker.pkg.dev/aihumane-prod/universe-monitor/redis-rest:latest"
-
-# Data tier (MVP defaults).
-db_tier              = "db-custom-1-3840"
-db_high_availability = false
-deploy_redis         = true
-redis_memory_gb      = 1
-
-# Local AI (Phase 10). Leave off for MVP; turn on when you want self-hosted Ollama.
-enable_ollama = false
-
-# Cloud Run scaling. Set min_instances = 1 for the MCP/backend to avoid cold starts.
-min_instances = 0
-max_instances = 4
-
-# Monitoring alerts (Phase 12). Leave blank to skip alert policies.
-alert_email = ""
-
-# Subdomain -> Cloud Run service routing (Phase 14). Defaults match the plan:
-# subdomains = {
-#   "aihumane.in"       = "frontend"
-#   "app.aihumane.in"   = "frontend"
-#   "api.aihumane.in"   = "backend"
-#   "docs.aihumane.in"  = "frontend"
-#   "admin.aihumane.in" = "auth"
-# }
+# ── Optional overrides (uncomment only what you need to change) ──────────────
+# region               = "us-central1"
+# domain               = "aihumane.in"
+# db_high_availability  = true      # REGIONAL Cloud SQL once traffic warrants it
+# deploy_redis          = false     # skip Memorystore for the cheapest MVP
+# enable_ollama         = true      # self-hosted local AI (Phase 10)
+# min_instances         = 1         # keep the MCP/backend warm (no cold starts)
+# alert_email           = "you@example.com"   # enable Cloud Monitoring alerts
+# image_app             = "us-central1-docker.pkg.dev/aihumane-prod/universe-monitor/app:latest"
