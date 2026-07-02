@@ -54,6 +54,22 @@ steps:
   - id: fetch-source
     name: gcr.io/cloud-builders/git
     args: ["clone", "--depth", "1", "${UPSTREAM}", "app"]
+  # Instance branding: rewrite the upstream author's profile link to ours,
+  # wherever it appears in the source, before building. No-op if absent.
+  - id: patch-branding
+    name: gcr.io/cloud-builders/git
+    dir: app
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        matches=\$(grep -rl 'x\.com/eliehabib' . 2>/dev/null || true)
+        if [ -n "\$matches" ]; then
+          echo "\$matches" | xargs sed -i 's|https://x\.com/eliehabib|https://www.linkedin.com/in/shivashish-borah/|g'
+          echo "patched files:"; echo "\$matches"
+        else
+          echo "no x.com/eliehabib occurrences found (nothing to patch)"
+        fi
   - id: build
     name: gcr.io/cloud-builders/docker
     dir: app
