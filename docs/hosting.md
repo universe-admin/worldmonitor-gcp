@@ -31,6 +31,21 @@ you export unlocks another data layer).
        --update-env-vars GROQ_API_KEY=...,FINNHUB_API_KEY=...
    ```
 
+   **Open the Pro-gated UI on a self-host.** The app's single premium gate
+   (`hasPremiumAccess()` in `src/services/panel-gating.ts`) unlocks when
+   `WORLDMONITOR_API_KEY` is present — this is the upstream project's own
+   self-host switch. Setting it removes every "Upgrade to Pro" CTA, lock badge,
+   and paywall overlay, and enables the premium features served by the app's own
+   bundled `api/*` handlers (chat-analyst, briefs, MCP). Premium data that the
+   upstream app fetches from `api.worldmonitor.app` (the authors' hosted
+   backend — some Country Deep Dive / markets cards) renders unlocked but stays
+   empty, since that data lives on infrastructure a self-host does not run.
+
+   ```bash
+   gcloud run services update worldmonitor --region us-central1 \
+       --update-env-vars WORLDMONITOR_API_KEY=wm_$(openssl rand -hex 20)
+   ```
+
 4. The script prints the live URL when done:
 
    ```
