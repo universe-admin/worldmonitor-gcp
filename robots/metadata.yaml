@@ -1,0 +1,38 @@
+title: >-
+  Deploy, Augment, or Hire? A Total-Cost-of-Ownership and Cohort Framework for
+  Robot-Labor Deployment Decisions Across Global Wage Regions
+manuscript_type: Research Article
+target_journal: Science Robotics
+publisher: American Association for the Advancement of Science (AAAS)
+date: 2026-06-30
+body_word_count_approx: 19000
+authors:
+  - name: Shivashish Borah
+    orcid: 0009-0000-9726-2864
+    orcid_url: https://orcid.org/0009-0000-9726-2864
+    affiliation: AI Humane Tech Pvt Ltd, Bengaluru, India
+    corresponding: true
+    email: shivashish@aihumane.in
+keywords:
+  - deployed robotics
+  - total cost of ownership
+  - automation economics
+  - loaded labor cost
+  - human-capital depreciation
+  - cohort analysis
+  - payback period
+  - bill of materials
+  - break-even wage
+  - robot penetration
+  - regional wage comparison
+ai_assistance:
+  tool: Anthropic Claude (Claude Opus 4.8, via Claude Code)
+  role: copy-editing and presentation only
+  generated_research_content: false
+  credited_as_author: false
+files:
+  manuscript_final: manuscript/Robot_TCO_ScienceRobotics_FINAL.docx
+  manuscript_tracked: manuscript/Robot_TCO_ScienceRobotics_TRACKED.docx
+  manuscript_markdown: manuscript/manuscript.md
+  cover_letter: cover-letter/Robot_TCO_ScienceRobotics_CoverLetter.docx
+  cover_letter_markdown: cover-letter/cover-letter.md

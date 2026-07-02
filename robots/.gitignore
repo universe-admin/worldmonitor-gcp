@@ -1,0 +1,5 @@
+# Office/OS temp artifacts
+~$*.docx
+.~lock.*#
+.DS_Store
+Thumbs.db
