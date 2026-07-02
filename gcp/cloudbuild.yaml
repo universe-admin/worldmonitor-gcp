@@ -43,7 +43,24 @@ steps:
           mkdir -p app-src && cp -r . app-src
         fi
 
-  # 2. Build the app image (frontend + api + MCP).
+  # 2. Instance branding: rewrite the upstream author's profile link to ours,
+  #    wherever it appears in the source. No-op if absent.
+  - id: patch-branding
+    name: gcr.io/cloud-builders/git
+    dir: app-src
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        matches=$(grep -rl 'x\.com/eliehabib' . 2>/dev/null || true)
+        if [ -n "$matches" ]; then
+          echo "$matches" | xargs sed -i 's|https://x\.com/eliehabib|https://www.linkedin.com/in/shivashish-borah/|g'
+          echo "patched files:"; echo "$matches"
+        else
+          echo "no x.com/eliehabib occurrences found (nothing to patch)"
+        fi
+
+  # 3. Build the app image (frontend + api + MCP).
   - id: build
     name: gcr.io/cloud-builders/docker
     dir: app-src
@@ -55,7 +72,7 @@ steps:
       - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/app:latest"
       - .
 
-  # 3. Push to Artifact Registry (also handled by `images:` but explicit for ordering).
+  # 4. Push to Artifact Registry (also handled by `images:` but explicit for ordering).
   - id: push
     name: gcr.io/cloud-builders/docker
     args:
@@ -63,7 +80,7 @@ steps:
       - --all-tags
       - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/app"
 
-  # 4. Build the private AI worker image from this repo's workers/ directory.
+  # 5. Build the private AI worker image from this repo's workers/ directory.
   - id: build-worker
     name: gcr.io/cloud-builders/docker
     dir: workers
@@ -75,7 +92,7 @@ steps:
       - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/worker:latest"
       - .
 
-  # 5. Deploy the new images to Cloud Run (the app services share one image).
+  # 6. Deploy the new images to Cloud Run (the app services share one image).
   - id: deploy
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: bash
