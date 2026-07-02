@@ -46,13 +46,28 @@ gcloud artifacts repositories describe "${REPO}" --location "${REGION}" --quiet 
   gcloud artifacts repositories create "${REPO}" --location "${REGION}" \
     --repository-format docker --description "Universe Monitor images" --quiet
 
-say "Fetching upstream app source (koala73/worldmonitor)"
+say "Building the app image with Cloud Build (clones upstream server-side; ~5-10 min)"
+# The clone happens inside Cloud Build (--no-source) so this works even where
+# local git egress to github.com is restricted.
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "${WORKDIR}"' EXIT
-git clone --depth 1 "${UPSTREAM}" "${WORKDIR}/app"
-
-say "Building the app image with Cloud Build (this is the slow step, ~5-10 min)"
-gcloud builds submit "${WORKDIR}/app" --tag "${IMAGE}" --quiet
+cat > "${WORKDIR}/build.yaml" <<EOF
+steps:
+  - id: fetch-source
+    name: gcr.io/cloud-builders/git
+    args: ["clone", "--depth", "1", "${UPSTREAM}", "app"]
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    dir: app
+    args: ["build", "-t", "${IMAGE}", "."]
+images:
+  - "${IMAGE}"
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+timeout: 1800s
+EOF
+gcloud builds submit --no-source --config "${WORKDIR}/build.yaml" --quiet
 
 say "Collecting optional feature env vars"
 ENV_VARS=""
