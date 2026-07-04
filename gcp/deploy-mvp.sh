@@ -45,8 +45,12 @@ gcloud artifacts repositories describe "${REPO}" --location "${REGION}" --quiet 
     --repository-format docker --description "Universe Monitor images" --quiet
 
 say "Building the app image with Cloud Build (clones upstream server-side; ~5-10 min)"
-# The clone happens inside Cloud Build (--no-source) so this works even where
-# local git egress to github.com is restricted.
+# --no-source (no tarball upload → no extra Cloud Build SA storage permission
+# needed): the upstream app is cloned server-side, and gcp/patch-instance.sh is
+# carried into the build base64-encoded (avoids escaping the CSS/sed in nested
+# YAML). patch-instance.sh applies the Universe Monitor rebrand + theme.
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PATCH_B64="$(base64 "${REPO_ROOT}/gcp/patch-instance.sh" | tr -d '\n')"
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "${WORKDIR}"' EXIT
 cat > "${WORKDIR}/build.yaml" <<EOF
@@ -54,22 +58,13 @@ steps:
   - id: fetch-source
     name: gcr.io/cloud-builders/git
     args: ["clone", "--depth", "1", "${UPSTREAM}", "app"]
-  # Instance branding: rewrite the upstream author's profile link to ours,
-  # wherever it appears in the source, before building. No-op if absent.
-  - id: patch-branding
+  - id: patch-instance
     name: gcr.io/cloud-builders/git
     dir: app
     entrypoint: bash
     args:
       - -c
-      - |
-        matches=\$(grep -rl 'x\.com/eliehabib' . 2>/dev/null || true)
-        if [ -n "\$matches" ]; then
-          echo "\$matches" | xargs sed -i 's|https://x\.com/eliehabib|https://www.linkedin.com/in/shivashish-borah/|g'
-          echo "patched files:"; echo "\$matches"
-        else
-          echo "no x.com/eliehabib occurrences found (nothing to patch)"
-        fi
+      - 'echo "${PATCH_B64}" | base64 -d > /workspace/patch-instance.sh && bash /workspace/patch-instance.sh'
   - id: build
     name: gcr.io/cloud-builders/docker
     dir: app

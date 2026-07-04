@@ -43,22 +43,14 @@ steps:
           mkdir -p app-src && cp -r . app-src
         fi
 
-  # 2. Instance branding: rewrite the upstream author's profile link to ours,
-  #    wherever it appears in the source. No-op if absent.
+  # 2. Instance patch: rebrand (Universe Monitor / author / handle / GitHub) +
+  #    theme reskin. Single source of truth in gcp/patch-instance.sh, run over
+  #    the cloned app source before the build.
   - id: patch-branding
     name: gcr.io/cloud-builders/git
     dir: app-src
     entrypoint: bash
-    args:
-      - -c
-      - |
-        matches=$(grep -rl 'x\.com/eliehabib' . 2>/dev/null || true)
-        if [ -n "$matches" ]; then
-          echo "$matches" | xargs sed -i 's|https://x\.com/eliehabib|https://www.linkedin.com/in/shivashish-borah/|g'
-          echo "patched files:"; echo "$matches"
-        else
-          echo "no x.com/eliehabib occurrences found (nothing to patch)"
-        fi
+    args: ["/workspace/gcp/patch-instance.sh"]
 
   # 3. Build the app image (frontend + api + MCP).
   - id: build
