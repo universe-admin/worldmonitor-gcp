@@ -35,7 +35,24 @@ grep -rlZ 'eliehabib' . 2>/dev/null | xargs -0 -r sed -i \
 
 # GitHub links -> our deployment repo (leaves third-party github.com/* alone).
 grep -rlZ 'github.com/koala73' . 2>/dev/null | xargs -0 -r sed -i \
-  "s|github\.com/koala73/worldmonitor|${GH_REPO}|g; s|github\.com/koala73|github.com/universe-admin|g" || true
+  "s|github\.com/koala73/worldmonitor|github.com/universe-admin/worldmonitor-gcp|g; s|github\.com/koala73|github.com/universe-admin|g" || true
+
+# ── Remove Discord ──────────────────────────────────────────────────────────
+# 1) Physically delete self-contained single-line discord.gg invite anchors
+#    (the footer/menu link). Multi-line anchors (e.g. the preferences
+#    discussion link, whose <a> opens a template literal) are intentionally
+#    NOT line-deleted — the a[href*="discord.gg"] CSS rule below hides them,
+#    which avoids breaking the template.
+grep -rlZ 'discord\.gg' . --include='*.ts' 2>/dev/null | xargs -0 -r \
+  sed -i -E '/<a [^>]*discord\.gg[^>]*>[^<]*<\/a>/d' || true
+# 2) Drop Discord from the notifications channel picker. Removing the array
+#    membership ('discord', ) stops it rendering while leaving the ChannelType
+#    union and switch handlers intact, so tsc stays happy.
+grep -rlZ "'discord', " . --include='*.ts' 2>/dev/null | xargs -0 -r \
+  sed -i "s/'discord', //g" || true
+# 3) Tidy the channels blurb that lists Discord.
+grep -rlZ 'Telegram, Slack, Discord' . --include='*.ts' 2>/dev/null | xargs -0 -r \
+  sed -i 's/Telegram, Slack, Discord, and Email/Telegram, Slack, and Email/g' || true
 
 echo "[patch] 2/3 inject Universe Monitor theme into index.html"
 
@@ -73,4 +90,6 @@ echo "  Universe Monitor occurrences in index.html: $(grep -c 'Universe Monitor'
 echo "  theme block present: $(grep -c 'universe-monitor-theme' index.html || true)"
 echo "  linkedin refs: $(grep -rl 'linkedin.com/in/shivashish-borah' . 2>/dev/null | wc -l)"
 echo "  remaining x.com/eliehabib: $(grep -rl 'x.com/eliehabib' . 2>/dev/null | wc -l)"
+echo "  single-line discord.gg anchors remaining in .ts: $(grep -rlE '<a [^>]*discord\.gg[^>]*>[^<]*</a>' . --include='*.ts' 2>/dev/null | wc -l)"
+echo "  'discord', in channel arrays remaining: $(grep -rl \"'discord', \" . --include='*.ts' 2>/dev/null | wc -l)"
 echo "[patch] done"
