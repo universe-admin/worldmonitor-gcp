@@ -45,11 +45,15 @@ grep -rlZ 'github.com/koala73' . 2>/dev/null | xargs -0 -r sed -i \
 #    which avoids breaking the template.
 grep -rlZ 'discord\.gg' . --include='*.ts' 2>/dev/null | xargs -0 -r \
   sed -i -E '/<a [^>]*discord\.gg[^>]*>[^<]*<\/a>/d' || true
-# 2) Drop Discord from the notifications channel picker. Removing the array
-#    membership ('discord', ) stops it rendering while leaving the ChannelType
-#    union and switch handlers intact, so tsc stays happy.
-grep -rlZ "'discord', " . --include='*.ts' 2>/dev/null | xargs -0 -r \
-  sed -i "s/'discord', //g" || true
+# 2) Drop Discord from the notifications channel picker. Match ONLY a bare
+#    array element: a quoted 'discord' immediately preceded by `[` or `,` (list
+#    syntax) and followed by `,`. This never touches object literals like
+#    `{ id: 'discord', name: 'Discord', statusPage: ... }` (the Discord
+#    status-page monitor, unrelated to any invite and must survive) — a blanket
+#    `s/'discord', //` corrupts that into `{ id: name:` and breaks the build.
+#    The ChannelType union and `type === 'discord'` switch handlers stay intact.
+grep -rlZ "'discord'" . --include='*.ts' 2>/dev/null | xargs -0 -r \
+  sed -i -E "s/([\[,] ?)'discord'(, ?)/\1/g" || true
 # 3) Tidy the channels blurb that lists Discord.
 grep -rlZ 'Telegram, Slack, Discord' . --include='*.ts' 2>/dev/null | xargs -0 -r \
   sed -i 's/Telegram, Slack, Discord, and Email/Telegram, Slack, and Email/g' || true
@@ -91,5 +95,5 @@ echo "  theme block present: $(grep -c 'universe-monitor-theme' index.html || tr
 echo "  linkedin refs: $(grep -rl 'linkedin.com/in/shivashish-borah' . 2>/dev/null | wc -l)"
 echo "  remaining x.com/eliehabib: $(grep -rl 'x.com/eliehabib' . 2>/dev/null | wc -l)"
 echo "  single-line discord.gg anchors remaining in .ts: $(grep -rlE '<a [^>]*discord\.gg[^>]*>[^<]*</a>' . --include='*.ts' 2>/dev/null | wc -l)"
-echo "  'discord', in channel arrays remaining: $(grep -rl \"'discord', \" . --include='*.ts' 2>/dev/null | wc -l)"
+echo "  files with a bare 'discord' array element remaining: $(grep -rlE "[[,] ?'discord'," . --include='*.ts' 2>/dev/null | wc -l)"
 echo "[patch] done"
